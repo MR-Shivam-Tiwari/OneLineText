@@ -38,12 +38,12 @@ export default function Line() {
 
   return (
     <div>
-      <div className="w-full container mt-[60px] mb-[150px] mx-auto p-6">
+      <div className="w-full container mt-[0px]  mx-auto p-6">
         <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Text To OneLine Text Formatter</h2>
             <textarea
-              className="flex min-h-[80px] h-[400px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full resize-none"
+              className="flex min-h-[80px] h-[250px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full resize-none"
               placeholder="Enter your text here..."
               value={inputText}
               onChange={handleInputChange}
@@ -52,7 +52,7 @@ export default function Line() {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Formatted Text</h2>
             <textarea
-              className="flex min-h-[80px] rounded-md h-[400px] border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full resize-none"
+              className="flex min-h-[80px] rounded-md h-[250px] border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full resize-none"
               value={formattedText}
               readOnly
             ></textarea>

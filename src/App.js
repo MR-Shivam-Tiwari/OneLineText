@@ -1,4 +1,5 @@
 import Footer from "./Footer";
+import JsonCreate from "./JsonCreate";
 import Line from "./Line";
 import Navbar from "./Navbar";
 import './tailwind.css';
@@ -9,6 +10,7 @@ function App() {
       <Navbar />
       <div className="flex-grow" style={{}}>
         <Line />
+        <JsonCreate />
       </div>
       <Footer />
     </div>
