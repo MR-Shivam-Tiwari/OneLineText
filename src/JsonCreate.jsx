@@ -1,5 +1,41 @@
 import React, { useState } from 'react';
 
+// Modal Component
+const Modal = ({ isOpen, onClose, onAdd }) => {
+    const [subFieldName, setSubFieldName] = useState("");
+
+    const handleAdd = () => {
+        onAdd(subFieldName);
+        setSubFieldName(""); // Clear the input field after adding
+        onClose(); // Close the modal
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-gray-800  bg-opacity-75 flex items-center justify-center">
+            <div className="bg-white p-4 rounded  w-[400px] shadow-lg">
+                <h2 className="text-lg mb-2">Add New Subfield</h2>
+                <input
+                    type="text"
+                    value={subFieldName}
+                    onChange={(e) => setSubFieldName(e.target.value)}
+                    className="border border-gray-300 p-2 rounded w-full mb-4"
+                    placeholder="Subfield Name"
+                />
+                <div className="flex justify-end gap-2">
+                    <button onClick={onClose} className="bg-gray-500 text-white p-2 rounded">
+                        Cancel
+                    </button>
+                    <button onClick={handleAdd} className="bg-blue-500 text-white p-2 rounded">
+                        Add
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 function JsonCreate() {
     const [fields, setFields] = useState([]);
     const [jsonList, setJsonList] = useState([]);
@@ -7,6 +43,8 @@ function JsonCreate() {
     const [idCounter, setIdCounter] = useState(1);
     const [previousJsonList, setPreviousJsonList] = useState([]);
     const [filterFields, setFilterFields] = useState(false); // Added filter state
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentFieldId, setCurrentFieldId] = useState(null);
 
     const handleAddField = () => {
         if (newFieldName.trim() === '') return;
@@ -16,17 +54,8 @@ function JsonCreate() {
     };
 
     const handleAddSubField = (parentId) => {
-        const newFields = fields.map(field => {
-            if (field.id === parentId) {
-                return {
-                    ...field,
-                    subFields: [...field.subFields, { name: `line${field.subFields.length + 1}`, id: idCounter, value: '' }]
-                };
-            }
-            return field;
-        });
-        setFields(newFields);
-        setIdCounter(idCounter + 1);
+        setCurrentFieldId(parentId);
+        setIsModalOpen(true);
     };
 
     const handleFieldChange = (id, value) => {
@@ -45,6 +74,22 @@ function JsonCreate() {
         }));
     };
 
+    const handleAddNewSubField = (name) => {
+        setFields(fields.map(field => {
+            if (field.id === currentFieldId) {
+                return {
+                    ...field,
+                    subFields: [
+                        ...field.subFields,
+                        { name, id: idCounter, value: '' }
+                    ]
+                };
+            }
+            return field;
+        }));
+        setIdCounter(idCounter + 1);
+    };
+
     const handleCreateJson = () => {
         const newJsonFields = {};
         fields.forEach(({ name, value, subFields }) => {
@@ -60,7 +105,12 @@ function JsonCreate() {
         const newJson = { id: jsonList.length + 1, ...newJsonFields };
         setPreviousJsonList([...jsonList]);
         setJsonList([...jsonList, newJson]);
-        setFields(fields.map(field => ({ ...field, value: '', subFields: [] })));
+        // Clear only the subfield values
+        setFields(fields.map(field => ({
+            ...field,
+            value: '',
+            subFields: field.subFields.map(subField => ({ ...subField, value: '' }))
+        })));
     };
 
     const handleUndo = () => {
@@ -76,7 +126,6 @@ function JsonCreate() {
     };
 
     const filteredFields = filterFields ? fields.map(field => ({ ...field, name: field.name.replace(/"/g, '') })) : fields;
-
 
     return (
         <div className="container mx-auto p-4">
@@ -111,7 +160,7 @@ function JsonCreate() {
                 </div>
                 <div className="flex-1">
                     <button
-                        onClick={() => setFilterFields(!filterFields)}
+                        onClick={handleToggleFilter}
                         className={`p-2 rounded mt-2 sm:mt-0 ${filterFields ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600'}`}
                     >
                         {filterFields ? 'Filter Off' : 'Filter On'}
@@ -135,20 +184,24 @@ function JsonCreate() {
                 </button>
             </div>
             {filteredFields.map(({ name, id, value, subFields }) => (
-                <div key={id} className="flex items-end gap-2  border-gray-300 rounded">
-                    <label className="block mb-1">{name}:</label>
-                    <input
-                        type="text"
-                        value={value}
-                        onChange={(e) => handleFieldChange(id, e.target.value)}
-                        className="border border-gray
-                        300 p-2 rounded w-full"
-                    />
+                <div key={id} className="flex items-center gap-2 border border-gray-300 rounded p-2">
+                    <div className="flex items-end gap-2">
+                        {/* <label className="block mb-1">{name}:</label> */}
+                        <input
+                            type="text"
+                            value={value}
+                            placeholder={name}
+                            onChange={(e) => handleFieldChange(id, e.target.value)}
+                            className="border border-gray-300 p-2 rounded"
+                        />
+                    </div>
+                    <label>SubFields =</label>
                     {subFields.map(({ name: subFieldName, id: subFieldId, value: subFieldValue }) => (
                         <div key={subFieldId} className="mt-2">
-                            <label className="block mb-1">{subFieldName}:</label>
+                            {/* <label className="block mb-1">{subFieldName}:</label> */}
                             <input
                                 type="text"
+                                placeholder={subFieldName}
                                 value={subFieldValue}
                                 onChange={(e) => handleSubFieldChange(id, subFieldId, e.target.value)}
                                 className="border border-gray-300 p-2 rounded w-full"
@@ -157,15 +210,19 @@ function JsonCreate() {
                     ))}
                     <button
                         onClick={() => handleAddSubField(id)}
-                        className="bg-blue-500 text-white p-2 h-10 rounded mt-2"
+                        className="bg-blue-500 text-white p-2 h-8 w-14 text-center text-xs  rounded "
                     >
                         Add
                     </button>
                 </div>
             ))}
+            <Modal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                onAdd={handleAddNewSubField} 
+            />
             <div className='flex justify-between items-center mb-2'>
                 <h2 className="text-xl font-bold mt-4">Created JSONs</h2>
-
             </div>
             <pre className="bg-gray-100 p-4 rounded overflow-x-auto">{JSON.stringify(jsonList, null, 2)}</pre>
         </div>
